@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include<time.h>
 #include<cstdio>
+#include <winbgim.h>
 #include "draw.h"
 #define so_thread 2
 
@@ -29,7 +30,7 @@ void prepare()
 }
 bool isGameOver()
 {
-//	if (!kbhit()) return true;
+	if (dot.y > 31) return true;
 	return false;	
 }
 void checkPress(char &c, bool &kytu)
@@ -53,8 +54,8 @@ void checkPress(char &c, bool &kytu)
 			xoaBi(dot.x,dot.y);
 			dot.x = dot.x -2;
 			veBi(dot.x,dot.y);
-			gotoxy(70,0);
-			cout << "left " << " " << tamx1;
+//			gotoxy(70,0);
+//			cout << "left " << " " << tamx1;
 		}
 	}
 	if (c == 77 && !kytu && tamx1 < 55) // right
@@ -66,8 +67,8 @@ void checkPress(char &c, bool &kytu)
 			xoaBi(dot.x,dot.y);
 			dot.x = dot.x + 2;
 			veBi(dot.x,dot.y);
-			gotoxy(70,0);
-			cout << "right" << " " << tamx1;
+//			gotoxy(70,0);
+//			cout << "right" << " " << tamx1;
 		}
 		
 	}
@@ -101,9 +102,16 @@ void chayBi(int &dem, clock_t &batdau)
 			{
 				dimx = -dimx;
 			}
-			if (dot.y + 1 >= 31)
+			if (dot.y + 1 == 31)
 			{
-				dimy = -dimy;
+				if ((tamx1-6) <= dot.x+2  && (tamx1+4) >= dot.x)
+				{
+					if (tamx1-6 == dot.x+2)
+					{
+						dimx = -dimx;
+					}
+					dimy = -dimy;
+				}
 			}
 		}
 	}
@@ -126,9 +134,16 @@ void chayBi(int &dem, clock_t &batdau)
 			{
 				dimx = -dimx;
 			}
-			if (dot.y + 1 >= 31)
+			if (dot.y + 1 == 31)
 			{
-				dimy = -dimy;
+				if ((tamx1-6) <= dot.x  && (tamx1+4) >= dot.x-2)
+				{
+					if (tamx1+4 == dot.x-2)
+					{
+						dimx = -dimx;
+					}
+					dimy = -dimy;
+				}
 			}
 		}
 	}
@@ -136,8 +151,20 @@ void chayBi(int &dem, clock_t &batdau)
 	}
 	dem = dem + ((double)(clock() - batdau)/CLOCKS_PER_SEC)*1000;
 }
+void Pause()
+{
+	gotoxy(28,20);
+	srand(time(NULL));
+	ChangeColor(1+rand()%15);
+	cout << "PAUSE";
+	Sleep(50);
+	gotoxy(28,20);
+	ChangeColor(15);
+	cout << "     ";
+}
 void run()
 {
+	bool pause = 0;
 	int dem = 0;
 	bool start = 0;
 //	pthread_t threads[so_thread];
@@ -148,10 +175,15 @@ void run()
 	while (!isGameOver() && c != 27)
 	{
 		batdau = clock();
-		if (kbhit())checkPress(c,kytu);
+		if (kbhit() && !ismouseclick(WM_LBUTTONDOWN) && !ismouseclick(WM_RBUTTONDOWN))checkPress(c,kytu);
+		while (start && c == 112 && kytu) 
+		{
+			Pause();
+			if (kbhit() && !ismouseclick(WM_LBUTTONDOWN) && !ismouseclick(WM_RBUTTONDOWN))checkPress(c,kytu);
+		}
 		if (c == 32) start = 1;
 		thoigian = (((double)(clock() - batdau)/CLOCKS_PER_SEC)*1000);
-		gotoxy(70,1); cout << thoigian;
+//		gotoxy(70,1); cout << thoigian;
 		dem = dem+thoigian;
 		if (start)chayBi(dem,batdau);
 	}
